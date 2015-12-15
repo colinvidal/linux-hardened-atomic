@@ -57,6 +57,11 @@
 #include <linux/oom.h>
 #include <linux/compat.h>
 
+#ifdef CONFIG_PAX_REFCOUNT
+#include <linux/kallsyms.h>
+#include <linux/kdebug.h>
+#endif
+
 #include <asm/uaccess.h>
 #include <asm/mmu_context.h>
 #include <asm/tlb.h>
@@ -1741,5 +1746,23 @@ COMPAT_SYSCALL_DEFINE5(execveat, int, fd,
 	return compat_do_execveat(fd,
 				  getname_flags(filename, lookup_flags, NULL),
 				  argv, envp, flags);
+}
+#endif
+
+#ifdef CONFIG_PAX_REFCOUNT
+void pax_report_refcount_overflow(struct pt_regs *regs)
+{
+	if (current->signal->curr_ip)
+		printk(KERN_EMERG "PAX: From %pI4: refcount overflow detected in: %s:%d, uid/euid: %u/%u\n",
+				&current->signal->curr_ip, current->comm, task_pid_nr(current),
+				from_kuid_munged(&init_user_ns, current_uid()), from_kuid_munged(&init_user_ns, current_euid()));
+	else
+		printk(KERN_EMERG "PAX: refcount overflow detected in: %s:%d, uid/euid: %u/%u\n", current->comm, task_pid_nr(current),
+				from_kuid_munged(&init_user_ns, current_uid()), from_kuid_munged(&init_user_ns, current_euid()));
+	print_symbol(KERN_EMERG "PAX: refcount overflow occured at: %s\n", instruction_pointer(regs));
+	preempt_disable();
+	show_regs(regs);
+	preempt_enable();
+	force_sig_info(SIGKILL, SEND_SIG_FORCED, current);
 }
 #endif
