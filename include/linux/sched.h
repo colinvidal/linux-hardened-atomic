@@ -749,6 +749,17 @@ struct signal_struct {
 #ifdef CONFIG_TASKSTATS
 	struct taskstats *stats;
 #endif
+
+#ifdef CONFIG_GRKERNSEC
+	u32 curr_ip;
+	u32 saved_ip;
+	u32 gr_saddr;
+	u32 gr_daddr;
+	u16 gr_sport;
+	u16 gr_dport;
+	u8 used_accept:1;
+#endif
+
 #ifdef CONFIG_AUDIT
 	unsigned audit_tty;
 	unsigned audit_tty_log_passwd;
@@ -1759,7 +1770,7 @@ struct task_struct {
 	 * Number of functions that haven't been traced
 	 * because of depth overrun.
 	 */
-	atomic_t trace_overrun;
+	atomic_unchecked_t trace_overrun;
 	/* Pause for the tracing */
 	atomic_t tracing_graph_pause;
 #endif
@@ -1803,6 +1814,8 @@ extern int arch_task_struct_size __read_mostly;
 #else
 # define arch_task_struct_size (sizeof(struct task_struct))
 #endif
+
+extern void pax_report_refcount_overflow(struct pt_regs *regs);
 
 /* Future-safe accessor for struct task_struct's cpus_allowed. */
 #define tsk_cpus_allowed(tsk) (&(tsk)->cpus_allowed)

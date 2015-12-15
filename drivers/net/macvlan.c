@@ -335,7 +335,7 @@ static void macvlan_broadcast_enqueue(struct macvlan_port *port,
 free_nskb:
 	kfree_skb(nskb);
 err:
-	atomic_long_inc(&skb->dev->rx_dropped);
+	atomic_long_inc_unchecked(&skb->dev->rx_dropped);
 }
 
 static void macvlan_flush_sources(struct macvlan_port *port,

@@ -441,7 +441,7 @@ int sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb)
 	struct sk_buff_head *list = &sk->sk_receive_queue;
 
 	if (atomic_read(&sk->sk_rmem_alloc) >= sk->sk_rcvbuf) {
-		atomic_inc(&sk->sk_drops);
+		atomic_inc_unchecked(&sk->sk_drops);
 		trace_sock_rcvqueue_full(sk, skb);
 		return -ENOMEM;
 	}
@@ -451,7 +451,7 @@ int sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb)
 		return err;
 
 	if (!sk_rmem_schedule(sk, skb, skb->truesize)) {
-		atomic_inc(&sk->sk_drops);
+		atomic_inc_unchecked(&sk->sk_drops);
 		return -ENOBUFS;
 	}
 
@@ -484,7 +484,7 @@ int sk_receive_skb(struct sock *sk, struct sk_buff *skb, const int nested)
 	skb->dev = NULL;
 
 	if (sk_rcvqueues_full(sk, sk->sk_rcvbuf)) {
-		atomic_inc(&sk->sk_drops);
+		atomic_inc_unchecked(&sk->sk_drops);
 		goto discard_and_relse;
 	}
 	if (nested)
@@ -502,7 +502,7 @@ int sk_receive_skb(struct sock *sk, struct sk_buff *skb, const int nested)
 		mutex_release(&sk->sk_lock.dep_map, 1, _RET_IP_);
 	} else if (sk_add_backlog(sk, skb, sk->sk_rcvbuf)) {
 		bh_unlock_sock(sk);
-		atomic_inc(&sk->sk_drops);
+		atomic_inc_unchecked(&sk->sk_drops);
 		goto discard_and_relse;
 	}
 
@@ -1550,7 +1550,7 @@ struct sock *sk_clone_lock(const struct sock *sk, const gfp_t priority)
 		newsk->sk_err	   = 0;
 		newsk->sk_priority = 0;
 		newsk->sk_incoming_cpu = raw_smp_processor_id();
-		atomic64_set(&newsk->sk_cookie, 0);
+		atomic64_set_unchecked(&newsk->sk_cookie, 0);
 		/*
 		 * Before updating sk_refcnt, we must commit prior changes to memory
 		 * (Documentation/RCU/rculist_nulls.txt for details)
@@ -2359,7 +2359,7 @@ void sock_init_data(struct socket *sock, struct sock *sk)
 	 */
 	smp_wmb();
 	atomic_set(&sk->sk_refcnt, 1);
-	atomic_set(&sk->sk_drops, 0);
+	atomic_set_unchecked(&sk->sk_drops, 0);
 }
 EXPORT_SYMBOL(sock_init_data);
 

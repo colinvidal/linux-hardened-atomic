@@ -323,7 +323,7 @@ static void xfrm_policy_kill(struct xfrm_policy *policy)
 {
 	policy->walk.dead = 1;
 
-	atomic_inc(&policy->genid);
+	atomic_inc_unchecked(&policy->genid);
 
 	if (del_timer(&policy->polq.hold_timer))
 		xfrm_pol_put(policy);
@@ -773,7 +773,7 @@ int xfrm_policy_insert(int dir, struct xfrm_policy *policy, int excl)
 	else
 		hlist_add_head(&policy->bydst, chain);
 	__xfrm_policy_link(policy, dir);
-	atomic_inc(&net->xfrm.flow_cache_genid);
+	atomic_inc_unchecked(&net->xfrm.flow_cache_genid);
 
 	/* After previous checking, family can either be AF_INET or AF_INET6 */
 	if (policy->family == AF_INET)
@@ -1874,7 +1874,7 @@ xfrm_resolve_and_create_bundle(struct xfrm_policy **pols, int num_pols,
 
 	xdst->num_pols = num_pols;
 	memcpy(xdst->pols, pols, sizeof(struct xfrm_policy *) * num_pols);
-	xdst->policy_genid = atomic_read(&pols[0]->genid);
+	xdst->policy_genid = atomic_read_unchecked(&pols[0]->genid);
 
 	return xdst;
 }
@@ -2740,7 +2740,7 @@ static int xfrm_bundle_ok(struct xfrm_dst *first)
 		if (xdst->xfrm_genid != dst->xfrm->genid)
 			return 0;
 		if (xdst->num_pols > 0 &&
-		    xdst->policy_genid != atomic_read(&xdst->pols[0]->genid))
+		    xdst->policy_genid != atomic_read_unchecked(&xdst->pols[0]->genid))
 			return 0;
 
 		mtu = dst_mtu(dst->child);
@@ -3281,7 +3281,7 @@ static int xfrm_policy_migrate(struct xfrm_policy *pol,
 			       sizeof(pol->xfrm_vec[i].saddr));
 			pol->xfrm_vec[i].encap_family = mp->new_family;
 			/* flush bundles */
-			atomic_inc(&pol->genid);
+			atomic_inc_unchecked(&pol->genid);
 		}
 	}
 
