@@ -1636,7 +1636,7 @@ struct net_device {
 	unsigned long		base_addr;
 	int			irq;
 
-	atomic_t		carrier_changes;
+	atomic_wrap_t		carrier_changes;
 
 	/*
 	 *	Some hardware also needs these fields (state,dev_list,
@@ -1676,9 +1676,9 @@ struct net_device {
 
 	struct net_device_stats	stats;
 
-	atomic_long_t		rx_dropped;
-	atomic_long_t		tx_dropped;
-	atomic_long_t		rx_nohandler;
+	atomic_long_wrap_t	rx_dropped;
+	atomic_long_wrap_t	tx_dropped;
+	atomic_long_wrap_t	rx_nohandler;
 
 #ifdef CONFIG_WIRELESS_EXT
 	const struct iw_handler_def *wireless_handlers;

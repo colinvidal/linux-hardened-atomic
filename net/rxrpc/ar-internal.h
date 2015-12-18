@@ -321,9 +321,12 @@ struct rxrpc_connection {
 	u32			remote_abort;	/* remote abort code */
 	int			error;		/* local error incurred */
 	int			debug_id;	/* debug ID for printks */
-	atomic_t		serial;		/* packet serial number counter */
-	atomic_t		hi_serial;	/* highest serial number received */
-	atomic_t		avail_chans;	/* number of channels available */
+	atomic_wrap_t		serial;
+			/* packet serial number counter */
+	atomic_wrap_t		hi_serial;
+			/* highest serial number received */
+	atomic_wrap_t		avail_chans;
+			/* number of channels available */
 	u8			size_align;	/* data size alignment (for security) */
 	u8			header_size;	/* rxrpc + security header size */
 	u8			security_size;	/* security header size */
@@ -426,7 +429,7 @@ struct rxrpc_call {
 	rwlock_t		state_lock;	/* lock for state transition */
 	atomic_t		usage;
 	atomic_t		skb_count;	/* Outstanding packets on this call */
-	atomic_t		sequence;	/* Tx data packet sequence counter */
+	atomic_wrap_t	sequence;	/* Tx data packet sequence counter */
 	u32			local_abort;	/* local abort code */
 	u32			remote_abort;	/* remote abort code */
 	int			error_report;	/* Network error (ICMP/local transport) */
@@ -489,7 +492,7 @@ static inline void rxrpc_abort_call(struct rxrpc_call *call, u32 abort_code)
  */
 extern atomic_t rxrpc_n_skbs;
 extern u32 rxrpc_epoch;
-extern atomic_t rxrpc_debug_id;
+extern atomic_wrap_t rxrpc_debug_id;
 extern struct workqueue_struct *rxrpc_workqueue;
 
 /*

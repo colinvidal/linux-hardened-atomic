@@ -231,7 +231,7 @@ int rxrpc_connect_call(struct rxrpc_call *call,
 		 */
 		_debug("exclusive chan 0");
 		conn = candidate;
-		atomic_set(&conn->avail_chans, RXRPC_MAXCALLS - 1);
+		atomic_set_wrap(&conn->avail_chans, RXRPC_MAXCALLS - 1);
 		spin_lock(&conn->channel_lock);
 		chan = 0;
 		goto found_channel;
@@ -272,7 +272,7 @@ attached:
 	conn = candidate;
 	candidate = NULL;
 
-	atomic_set(&conn->avail_chans, RXRPC_MAXCALLS - 1);
+	atomic_set_wrap(&conn->avail_chans, RXRPC_MAXCALLS - 1);
 	spin_lock(&conn->channel_lock);
 	spin_unlock(&local->client_conns_lock);
 	chan = 0;
@@ -315,7 +315,7 @@ found_extant_conn:
 
 	rxrpc_put_connection(candidate);
 
-	if (!atomic_add_unless(&conn->avail_chans, -1, 0)) {
+	if (!atomic_add_unless_wrap(&conn->avail_chans, -1, 0)) {
 		if (!gfpflags_allow_blocking(gfp)) {
 			rxrpc_put_connection(conn);
 			_leave(" = -EAGAIN");
@@ -325,7 +325,7 @@ found_extant_conn:
 		add_wait_queue(&conn->channel_wq, &myself);
 		for (;;) {
 			set_current_state(TASK_INTERRUPTIBLE);
-			if (atomic_add_unless(&conn->avail_chans, -1, 0))
+			if (atomic_add_unless_wrap(&conn->avail_chans, -1, 0))
 				break;
 			if (signal_pending(current))
 				goto interrupted;
