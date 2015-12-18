@@ -161,7 +161,8 @@ static int meminfo_proc_show(struct seq_file *m, void *v)
 		0ul, // used to be vmalloc 'used'
 		0ul  // used to be vmalloc 'largest_chunk'
 #ifdef CONFIG_MEMORY_FAILURE
-		, atomic_long_read(&num_poisoned_pages) << (PAGE_SHIFT - 10)
+		, atomic_long_read_wrap(&num_poisoned_pages) <<
+				(PAGE_SHIFT - 10)
 #endif
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
 		, K(global_node_page_state(NR_ANON_THPS) * HPAGE_PMD_NR)
