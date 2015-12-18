@@ -2733,7 +2733,7 @@ static void free_mnt_ns(struct mnt_namespace *ns)
  * number incrementing at 10Ghz will take 12,427 years to wrap which
  * is effectively never, so we can ignore the possibility.
  */
-static atomic64_t mnt_ns_seq = ATOMIC64_INIT(1);
+static atomic64_wrap_t mnt_ns_seq = ATOMIC64_INIT(1);
 
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns)
 {
@@ -2749,7 +2749,7 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns)
 		return ERR_PTR(ret);
 	}
 	new_ns->ns.ops = &mntns_operations;
-	new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);
+	new_ns->seq = atomic64_add_return_wrap(1, &mnt_ns_seq);
 	atomic_set(&new_ns->count, 1);
 	new_ns->root = NULL;
 	INIT_LIST_HEAD(&new_ns->list);
