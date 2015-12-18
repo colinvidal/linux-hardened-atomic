@@ -83,7 +83,7 @@ struct vhci_hcd {
 	unsigned resuming:1;
 	unsigned long re_timeout;
 
-	atomic_t seqnum;
+	atomic_wrap_t seqnum;
 
 	/*
 	 * NOTE:
