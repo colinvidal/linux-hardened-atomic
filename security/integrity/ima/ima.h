@@ -158,8 +158,8 @@ static inline void ima_load_kexec_buffer(void)
 extern spinlock_t ima_queue_lock;
 
 struct ima_h_table {
-	atomic_long_t len;	/* number of stored measurements in the list */
-	atomic_long_t violations;
+	atomic_long_wrap_t len;	/* number of stored measurements in the list */
+	atomic_long_wrap_t violations;
 	struct hlist_head queue[IMA_MEASURE_HTABLE_SIZE];
 };
 extern struct ima_h_table ima_htable;
