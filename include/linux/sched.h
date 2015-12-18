@@ -749,6 +749,7 @@ struct signal_struct {
 #ifdef CONFIG_TASKSTATS
 	struct taskstats *stats;
 #endif
+
 #ifdef CONFIG_AUDIT
 	unsigned audit_tty;
 	unsigned audit_tty_log_passwd;
@@ -1803,6 +1804,8 @@ extern int arch_task_struct_size __read_mostly;
 #else
 # define arch_task_struct_size (sizeof(struct task_struct))
 #endif
+
+extern void pax_report_refcount_overflow(struct pt_regs *regs);
 
 /* Future-safe accessor for struct task_struct's cpus_allowed. */
 #define tsk_cpus_allowed(tsk) (&(tsk)->cpus_allowed)

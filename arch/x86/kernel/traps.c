@@ -213,6 +213,12 @@ do_trap_no_signal(struct task_struct *tsk, int trapnr, char *str,
 			tsk->thread.trap_nr = trapnr;
 			die(str, regs, error_code);
 		}
+
+#ifdef CONFIG_PAX_REFCOUNT
+		if (trapnr == X86_TRAP_OF)
+			pax_report_refcount_overflow(regs);
+#endif
+
 		return 0;
 	}
 
