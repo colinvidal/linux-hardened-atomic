@@ -180,7 +180,7 @@ int rxrpc_send_call_packet(struct rxrpc_call *call, u8 type)
 		goto out;
 	}
 
-	serial = atomic_inc_return(&conn->serial);
+	serial = atomic_inc_return_wrap(&conn->serial);
 	pkt->whdr.serial = htonl(serial);
 	switch (type) {
 	case RXRPC_PACKET_TYPE_ACK:
@@ -252,7 +252,7 @@ int rxrpc_send_data_packet(struct rxrpc_call *call, struct sk_buff *skb)
 	_enter(",{%d}", skb->len);
 
 	/* Each transmission of a Tx packet needs a new serial number */
-	serial = atomic_inc_return(&conn->serial);
+	serial = atomic_inc_return_wrap(&conn->serial);
 
 	whdr.epoch	= htonl(conn->proto.epoch);
 	whdr.cid	= htonl(call->cid);
