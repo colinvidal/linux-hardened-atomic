@@ -576,7 +576,7 @@ struct perf_event {
 	enum perf_event_active_state	state;
 	unsigned int			attach_state;
 	local64_t			count;
-	atomic64_t			child_count;
+	atomic64_wrap_t			child_count;
 
 	/*
 	 * These are the total time in nanoseconds that the event
@@ -627,8 +627,8 @@ struct perf_event {
 	 * These accumulate total time (in nanoseconds) that children
 	 * events have been enabled and running, respectively.
 	 */
-	atomic64_t			child_total_time_enabled;
-	atomic64_t			child_total_time_running;
+	atomic64_wrap_t			child_total_time_enabled;
+	atomic64_wrap_t			child_total_time_running;
 
 	/*
 	 * Protect attach/detach and child_list:
@@ -1077,7 +1077,8 @@ static inline void perf_event_task_sched_out(struct task_struct *prev,
 
 static inline u64 __perf_event_count(struct perf_event *event)
 {
-	return local64_read(&event->count) + atomic64_read(&event->child_count);
+	return local64_read(&event->count) +
+		atomic64_read_wrap(&event->child_count);
 }
 
 extern void perf_event_mmap(struct vm_area_struct *vma);
