@@ -507,6 +507,20 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
 }
 
 /**
+ * atomic_add_unless_wrap - add unless the number is already a given value
+ * @v: pointer of type atomic_wrap_t
+ * @a: the amount to add to v...
+ * @u: ...unless v is equal to u.
+ *
+ * Atomically adds @a to @v, so long as @v was not already @u.
+ * Returns non-zero if @v was not @u, and zero otherwise.
+ */
+static inline int atomic_add_unless_wrap(atomic_wrap_t *v, int a, int u)
+{
+	return __atomic_add_unless_wrap(v, a, u) != u;
+}
+
+/**
  * atomic_inc_not_zero - increment unless the number is zero
  * @v: pointer of type atomic_t
  *

@@ -22,6 +22,12 @@
 
 typedef atomic64_t atomic_long_t;
 
+#ifdef CONFIG_HARDENED_ATOMIC
+typedef atomic64_wrap_t atomic_long_wrap_t;
+#else
+typedef atomic64_t atomic_long_wrap_t;
+#endif
+
 #define ATOMIC_LONG_INIT(i)	ATOMIC64_INIT(i)
 #define ATOMIC_LONG_PFX(x)	atomic64 ## x
 
@@ -29,51 +35,61 @@ typedef atomic64_t atomic_long_t;
 
 typedef atomic_t atomic_long_t;
 
+#ifdef CONFIG_HARDENED_ATOMIC
+typedef atomic_wrap_t atomic_long_wrap_t;
+#else
+typedef atomic_t atomic_long_wrap_t;
+#endif
+
 #define ATOMIC_LONG_INIT(i)	ATOMIC_INIT(i)
 #define ATOMIC_LONG_PFX(x)	atomic ## x
 
 #endif
 
-#define ATOMIC_LONG_READ_OP(mo)						\
-static inline long atomic_long_read##mo(const atomic_long_t *l)		\
+#define ATOMIC_LONG_READ_OP(mo, suffix)						\
+static inline long atomic_long_read##mo##suffix(const atomic_long##suffix##_t *l)\
 {									\
-	ATOMIC_LONG_PFX(_t) *v = (ATOMIC_LONG_PFX(_t) *)l;		\
+	ATOMIC_LONG_PFX(suffix##_t) *v = (ATOMIC_LONG_PFX(suffix##_t) *)l;\
 									\
-	return (long)ATOMIC_LONG_PFX(_read##mo)(v);			\
+	return (long)ATOMIC_LONG_PFX(_read##mo##suffix)(v);		\
 }
-ATOMIC_LONG_READ_OP()
-ATOMIC_LONG_READ_OP(_acquire)
+ATOMIC_LONG_READ_OP(,)
+ATOMIC_LONG_READ_OP(,_wrap)
+ATOMIC_LONG_READ_OP(_acquire,)
 
 #undef ATOMIC_LONG_READ_OP
 
-#define ATOMIC_LONG_SET_OP(mo)						\
-static inline void atomic_long_set##mo(atomic_long_t *l, long i)	\
+#define ATOMIC_LONG_SET_OP(mo, suffix)					\
+static inline void atomic_long_set##mo##suffix(atomic_long##suffix##_t *l, long i)\
 {									\
-	ATOMIC_LONG_PFX(_t) *v = (ATOMIC_LONG_PFX(_t) *)l;		\
+	ATOMIC_LONG_PFX(suffix##_t) *v = (ATOMIC_LONG_PFX(suffix##_t) *)l;\
 									\
-	ATOMIC_LONG_PFX(_set##mo)(v, i);				\
+	ATOMIC_LONG_PFX(_set##mo##suffix)(v, i);			\
 }
-ATOMIC_LONG_SET_OP()
-ATOMIC_LONG_SET_OP(_release)
+ATOMIC_LONG_SET_OP(,)
+ATOMIC_LONG_SET_OP(,_wrap)
+ATOMIC_LONG_SET_OP(_release,)
 
 #undef ATOMIC_LONG_SET_OP
 
-#define ATOMIC_LONG_ADD_SUB_OP(op, mo)					\
+#define ATOMIC_LONG_ADD_SUB_OP(op, mo, suffix)				\
 static inline long							\
-atomic_long_##op##_return##mo(long i, atomic_long_t *l)			\
+atomic_long_##op##_return##mo##suffix(long i, atomic_long##suffix##_t *l)\
 {									\
-	ATOMIC_LONG_PFX(_t) *v = (ATOMIC_LONG_PFX(_t) *)l;		\
+	ATOMIC_LONG_PFX(suffix##_t) *v = (ATOMIC_LONG_PFX(suffix##_t) *)l;\
 									\
-	return (long)ATOMIC_LONG_PFX(_##op##_return##mo)(i, v);		\
+	return (long)ATOMIC_LONG_PFX(_##op##_return##mo##suffix)(i, v);\
 }
-ATOMIC_LONG_ADD_SUB_OP(add,)
-ATOMIC_LONG_ADD_SUB_OP(add, _relaxed)
-ATOMIC_LONG_ADD_SUB_OP(add, _acquire)
-ATOMIC_LONG_ADD_SUB_OP(add, _release)
-ATOMIC_LONG_ADD_SUB_OP(sub,)
-ATOMIC_LONG_ADD_SUB_OP(sub, _relaxed)
-ATOMIC_LONG_ADD_SUB_OP(sub, _acquire)
-ATOMIC_LONG_ADD_SUB_OP(sub, _release)
+ATOMIC_LONG_ADD_SUB_OP(add,,)
+ATOMIC_LONG_ADD_SUB_OP(add,,_wrap)
+ATOMIC_LONG_ADD_SUB_OP(add, _relaxed,)
+ATOMIC_LONG_ADD_SUB_OP(add, _acquire,)
+ATOMIC_LONG_ADD_SUB_OP(add, _release,)
+ATOMIC_LONG_ADD_SUB_OP(sub,,)
+//ATOMIC_LONG_ADD_SUB_OP(sub,,_wrap) todo: check if this is really not needed
+ATOMIC_LONG_ADD_SUB_OP(sub, _relaxed,)
+ATOMIC_LONG_ADD_SUB_OP(sub, _acquire,)
+ATOMIC_LONG_ADD_SUB_OP(sub, _release,)
 
 #undef ATOMIC_LONG_ADD_SUB_OP
 
@@ -98,6 +114,11 @@ ATOMIC_LONG_ADD_SUB_OP(sub, _release)
 #define atomic_long_xchg(v, new) \
 	(ATOMIC_LONG_PFX(_xchg)((ATOMIC_LONG_PFX(_t) *)(v), (new)))
 
+#ifdef CONFIG_HARDENED_ATOMIC
+#define atomic_long_xchg_wrap(v, new) \
+	(ATOMIC_LONG_PFX(_xchg_wrap)((ATOMIC_LONG_PFX(_wrap_t) *)(v), (new)))
+#endif
+
 static __always_inline void atomic_long_inc(atomic_long_t *l)
 {
 	ATOMIC_LONG_PFX(_t) *v = (ATOMIC_LONG_PFX(_t) *)l;
@@ -105,12 +126,30 @@ static __always_inline void atomic_long_inc(atomic_long_t *l)
 	ATOMIC_LONG_PFX(_inc)(v);
 }
 
+#ifdef CONFIG_HARDENED_ATOMIC
+static __always_inline void atomic_long_inc_wrap(atomic_long_wrap_t *l)
+{
+	ATOMIC_LONG_PFX(_wrap_t) *v = (ATOMIC_LONG_PFX(_wrap_t) *)l;
+
+	ATOMIC_LONG_PFX(_inc_wrap)(v);
+}
+#endif
+
 static __always_inline void atomic_long_dec(atomic_long_t *l)
 {
 	ATOMIC_LONG_PFX(_t) *v = (ATOMIC_LONG_PFX(_t) *)l;
 
 	ATOMIC_LONG_PFX(_dec)(v);
 }
+
+#ifdef CONFIG_HARDENED_ATOMIC
+static __always_inline void atomic_long_dec_wrap(atomic_long_wrap_t *l)
+{
+	ATOMIC_LONG_PFX(_wrap_t) *v = (ATOMIC_LONG_PFX(_wrap_t) *)l;
+
+	ATOMIC_LONG_PFX(_dec_wrap)(v);
+}
+#endif
 
 #define ATOMIC_LONG_FETCH_OP(op, mo)					\
 static inline long							\
@@ -168,21 +207,23 @@ ATOMIC_LONG_FETCH_INC_DEC_OP(dec, _release)
 
 #undef ATOMIC_LONG_FETCH_INC_DEC_OP
 
-#define ATOMIC_LONG_OP(op)						\
+#define ATOMIC_LONG_OP(op, suffix)					\
 static __always_inline void						\
-atomic_long_##op(long i, atomic_long_t *l)				\
+atomic_long_##op##suffix(long i, atomic_long##suffix##_t *l)		\
 {									\
-	ATOMIC_LONG_PFX(_t) *v = (ATOMIC_LONG_PFX(_t) *)l;		\
+	ATOMIC_LONG_PFX(suffix##_t) *v = (ATOMIC_LONG_PFX(suffix##_t) *)l;\
 									\
-	ATOMIC_LONG_PFX(_##op)(i, v);					\
+	ATOMIC_LONG_PFX(_##op##suffix)(i, v);				\
 }
 
-ATOMIC_LONG_OP(add)
-ATOMIC_LONG_OP(sub)
-ATOMIC_LONG_OP(and)
-ATOMIC_LONG_OP(andnot)
-ATOMIC_LONG_OP(or)
-ATOMIC_LONG_OP(xor)
+ATOMIC_LONG_OP(add,)
+ATOMIC_LONG_OP(add,_wrap)
+ATOMIC_LONG_OP(sub,)
+ATOMIC_LONG_OP(sub,_wrap)
+ATOMIC_LONG_OP(and,)
+ATOMIC_LONG_OP(or,)
+ATOMIC_LONG_OP(xor,)
+ATOMIC_LONG_OP(andnot,)
 
 #undef ATOMIC_LONG_OP
 
@@ -214,22 +255,23 @@ static inline int atomic_long_add_negative(long i, atomic_long_t *l)
 	return ATOMIC_LONG_PFX(_add_negative)(i, v);
 }
 
-#define ATOMIC_LONG_INC_DEC_OP(op, mo)					\
+#define ATOMIC_LONG_INC_DEC_OP(op, mo, suffix)				\
 static inline long							\
-atomic_long_##op##_return##mo(atomic_long_t *l)				\
+atomic_long_##op##_return##mo##suffix(atomic_long##suffix##_t *l)	\
 {									\
-	ATOMIC_LONG_PFX(_t) *v = (ATOMIC_LONG_PFX(_t) *)l;		\
+	ATOMIC_LONG_PFX(suffix##_t) *v = (ATOMIC_LONG_PFX(suffix##_t) *)l;\
 									\
-	return (long)ATOMIC_LONG_PFX(_##op##_return##mo)(v);		\
+	return (long)ATOMIC_LONG_PFX(_##op##_return##mo##suffix)(v);	\
 }
-ATOMIC_LONG_INC_DEC_OP(inc,)
-ATOMIC_LONG_INC_DEC_OP(inc, _relaxed)
-ATOMIC_LONG_INC_DEC_OP(inc, _acquire)
-ATOMIC_LONG_INC_DEC_OP(inc, _release)
-ATOMIC_LONG_INC_DEC_OP(dec,)
-ATOMIC_LONG_INC_DEC_OP(dec, _relaxed)
-ATOMIC_LONG_INC_DEC_OP(dec, _acquire)
-ATOMIC_LONG_INC_DEC_OP(dec, _release)
+ATOMIC_LONG_INC_DEC_OP(inc,,)
+ATOMIC_LONG_INC_DEC_OP(inc,,_wrap)
+ATOMIC_LONG_INC_DEC_OP(inc, _relaxed,)
+ATOMIC_LONG_INC_DEC_OP(inc, _acquire,)
+ATOMIC_LONG_INC_DEC_OP(inc, _release,)
+ATOMIC_LONG_INC_DEC_OP(dec,,)
+ATOMIC_LONG_INC_DEC_OP(dec, _relaxed,)
+ATOMIC_LONG_INC_DEC_OP(dec, _acquire,)
+ATOMIC_LONG_INC_DEC_OP(dec, _release,)
 
 #undef ATOMIC_LONG_INC_DEC_OP
 
@@ -242,5 +284,29 @@ static inline long atomic_long_add_unless(atomic_long_t *l, long a, long u)
 
 #define atomic_long_inc_not_zero(l) \
 	ATOMIC_LONG_PFX(_inc_not_zero)((ATOMIC_LONG_PFX(_t) *)(l))
+
+#ifndef CONFIG_HARDENED_ATOMIC
+#define atomic_read_wrap(v) atomic_read(v)
+#define atomic_set_wrap(v, i) atomic_set((v), (i))
+#define atomic_add_wrap(i, v) atomic_add((i), (v))
+#define atomic_add_unless_wrap(v, i, j) atomic_add_unless((v), (i), (j))
+#define atomic_sub_wrap(i, v) atomic_sub((i), (v))
+#define atomic_inc_wrap(v) atomic_inc(v)
+#define atomic_inc_and_test_wrap(v) atomic_inc_and_test(v)
+#define atomic_inc_return_wrap(v) atomic_inc_return(v)
+#define atomic_add_return_wrap(i, v) atomic_add_return((i), (v))
+#define atomic_dec_wrap(v) atomic_dec(v)
+#define atomic_cmpxchg_wrap(v, o, n) atomic_cmpxchg((v), (o), (n))
+#define atomic_xchg_wrap(v, i) atomic_xchg((v), (i))
+#define atomic_long_read_wrap(v) atomic_long_read(v)
+#define atomic_long_set_wrap(v, i) atomic_long_set((v), (i))
+#define atomic_long_add_wrap(i, v) atomic_long_add((i), (v))
+#define atomic_long_sub_wrap(i, v) atomic_long_sub((i), (v))
+#define atomic_long_inc_wrap(v) atomic_long_inc(v)
+#define atomic_long_add_return_wrap(i, v) atomic_long_add_return((i), (v))
+#define atomic_long_inc_return_wrap(v) atomic_long_inc_return(v)
+#define atomic_long_dec_wrap(v) atomic_long_dec(v)
+#define atomic_long_xchg_wrap(v, i) atomic_long_xchg((v), (i))
+#endif /* CONFIG_HARDENED_ATOMIC */
 
 #endif  /*  _ASM_GENERIC_ATOMIC_LONG_H  */

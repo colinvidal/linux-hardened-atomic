@@ -232,4 +232,13 @@ static inline int __atomic_add_unless(atomic_t *v, int a, int u)
 	return c;
 }
 
+static inline int __atomic_add_unless_wrap(atomic_t *v, int a, int u)
+{
+	int c, old;
+	c = atomic_read_wrap(v);
+	while (c != u && (old = atomic_cmpxchg_wrap(v, c, c + a)) != c)
+		c = old;
+	return c;
+}
+
 #endif /* __ASM_GENERIC_ATOMIC_H */

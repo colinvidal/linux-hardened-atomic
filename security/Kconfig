@@ -158,6 +158,21 @@ config HARDENED_USERCOPY_PAGESPAN
 	  been removed. This config is intended to be used only while
 	  trying to find such users.
 
+config HAVE_ARCH_HARDENED_ATOMIC
+	bool
+	help
+	  The architecture supports CONFIG_HARDENED_ATOMIC by
+	  providing additional checks on counter overflows for atomic_t
+
+config HARDENED_ATOMIC
+	bool "Prevent reference counter overflow in atomic_t"
+	depends on HAVE_ARCH_HARDENED_ATOMIC
+	help
+	  This option prevents reference counters in atomic_t from
+	  overflow. This allows to avoid the
+	  situation when counter overflow leads to an exploitable
+	  use-after-free situation.
+
 source security/selinux/Kconfig
 source security/smack/Kconfig
 source security/tomoyo/Kconfig
