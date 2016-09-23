@@ -128,29 +128,115 @@ void lkdtm_HUNG_TASK(void)
 	schedule();
 }
 
-void lkdtm_ATOMIC_UNDERFLOW(void)
-{
-	atomic_t under = ATOMIC_INIT(INT_MIN);
-
-	pr_info("attempting good atomic increment\n");
-	atomic_inc(&under);
-	atomic_dec(&under);
-
-	pr_info("attempting bad atomic underflow\n");
-	atomic_dec(&under);
+#define ATOMIC_LKDTM_MIN(tag,fun) void lkdtm_ATOMIC_##tag(void)	\
+{									\
+	atomic_t atomic = ATOMIC_INIT(INT_MIN);				\
+									\
+	pr_info("attempting good atomic_" #fun "\n");			\
+	atomic_inc(&atomic);						\
+	TEST_FUNC(&atomic);						\
+									\
+	pr_info("attempting bad atomic_" #fun "\n");			\
+	TEST_FUNC(&atomic);						\
 }
 
-void lkdtm_ATOMIC_OVERFLOW(void)
-{
-	atomic_t over = ATOMIC_INIT(INT_MAX);
-
-	pr_info("attempting good atomic decrement\n");
-	atomic_dec(&over);
-	atomic_inc(&over);
-
-	pr_info("attempting bad atomic overflow\n");
-	atomic_inc(&over);
+#define ATOMIC_LKDTM_MAX(tag,fun,...)					\
+void lkdtm_ATOMIC_##tag(void)						\
+{									\
+	atomic_t atomic = ATOMIC_INIT(INT_MAX);				\
+									\
+	pr_info("attempting good atomic_" #fun "\n");			\
+	atomic_dec(&atomic);						\
+	TEST_FUNC(&atomic);						\
+									\
+	pr_info("attempting bad atomic_" #fun "\n");			\
+	TEST_FUNC(&atomic);						\
 }
+
+#define ATOMIC_LKDTM_LONG_MIN(tag,fun,...)				\
+void lkdtm_ATOMIC_LONG_##tag(void)					\
+{									\
+	atomic_long_t atomic  = ATOMIC_LONG_INIT(LONG_MIN);		\
+									\
+	pr_info("attempting good atomic_long_" #fun "\n");		\
+	atomic_long_inc(&atomic);					\
+	TEST_FUNC(&atomic);						\
+									\
+	pr_info("attempting bad atomic_long_" #fun "\n");		\
+	TEST_FUNC(&atomic);						\
+}
+
+#define ATOMIC_LKDTM_LONG_MAX(tag,fun,...)				\
+void lkdtm_ATOMIC_LONG_##tag(void)					\
+{									\
+	atomic_long_t atomic = ATOMIC_LONG_INIT(LONG_MAX);		\
+									\
+	pr_info("attempting good atomic_long_" #fun "\n");		\
+	atomic_long_dec(&atomic);					\
+	TEST_FUNC(&atomic);						\
+									\
+	pr_info("attempting bad atomic_long_" #fun "\n");		\
+	TEST_FUNC(&atomic);						\
+}
+
+#define TEST_FUNC(x) atomic_dec(x)
+ATOMIC_LKDTM_MIN(UNDERFLOW,dec)
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_dec_return(x)
+ATOMIC_LKDTM_MIN(DEC_RETURN_UNDERFLOW,dec_return);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_sub(1,x)
+ATOMIC_LKDTM_MIN(SUB_UNDERFLOW,sub);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_sub_return(1,x);
+ATOMIC_LKDTM_MIN(SUB_RETURN_UNDERFLOW,sub_return);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_inc(x);
+ATOMIC_LKDTM_MAX(OVERFLOW,inc);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_inc_return(x);
+ATOMIC_LKDTM_MAX(INC_RETURN_OVERFLOW,inc_return);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_add(1,x);
+ATOMIC_LKDTM_MAX(ADD_OVERFLOW,add);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_add_return(1,x);
+ATOMIC_LKDTM_MAX(ADD_RETURN_OVERFLOW,add_return);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_add_unless(x,1,0);
+ATOMIC_LKDTM_MAX(ADD_UNLESS_OVERFLOW,add_unless);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_inc_and_test(x);
+ATOMIC_LKDTM_MAX(INC_AND_TEST_OVERFLOW,inc_and_test);
+#undef TEST_FUNC
+
+#define TEST_FUNC(x) atomic_long_dec(x);
+ATOMIC_LKDTM_LONG_MIN(UNDERFLOW,dec);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_long_dec_return(x);
+ATOMIC_LKDTM_LONG_MIN(DEC_RETURN_UNDERFLOW,dec_return);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_long_sub(1,x);
+ATOMIC_LKDTM_LONG_MIN(SUB_UNDERFLOW,sub);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_long_sub_return(1,x);
+ATOMIC_LKDTM_LONG_MIN(SUB_RETURN_UNDERFLOW,sub_return);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_long_inc(x);
+ATOMIC_LKDTM_LONG_MAX(OVERFLOW,inc);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_long_inc_return(x);
+ATOMIC_LKDTM_LONG_MAX(INC_RETURN_OVERFLOW,inc_return);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_long_add(1,x);
+ATOMIC_LKDTM_LONG_MAX(ADD_OVERFLOW,add);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_long_add_return(1,x);
+ATOMIC_LKDTM_LONG_MAX(ADD_RETURN_OVERFLOW,add_return);
+#undef TEST_FUNC
+#define TEST_FUNC(x) atomic_long_sub_and_test(1,x);
+ATOMIC_LKDTM_LONG_MIN(SUB_AND_TEST,sub_and_test);
+#undef TEST_FUNC
 
 void lkdtm_CORRUPT_LIST_ADD(void)
 {
