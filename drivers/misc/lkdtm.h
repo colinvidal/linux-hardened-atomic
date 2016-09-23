@@ -20,7 +20,23 @@ void lkdtm_HARDLOCKUP(void);
 void lkdtm_SPINLOCKUP(void);
 void lkdtm_HUNG_TASK(void);
 void lkdtm_ATOMIC_UNDERFLOW(void);
+void lkdtm_ATOMIC_DEC_RETURN_UNDERFLOW(void);
+void lkdtm_ATOMIC_SUB_UNDERFLOW(void);
+void lkdtm_ATOMIC_SUB_RETURN_UNDERFLOW(void);
 void lkdtm_ATOMIC_OVERFLOW(void);
+void lkdtm_ATOMIC_INC_RETURN_OVERFLOW(void);
+void lkdtm_ATOMIC_ADD_OVERFLOW(void);
+void lkdtm_ATOMIC_ADD_RETURN_OVERFLOW(void);
+void lkdtm_ATOMIC_ADD_UNLESS_OVERFLOW(void);
+void lkdtm_ATOMIC_INC_AND_TEST_OVERFLOW(void);
+void lkdtm_ATOMIC_LONG_UNDERFLOW(void);
+void lkdtm_ATOMIC_LONG_DEC_RETURN_UNDERFLOW(void);
+void lkdtm_ATOMIC_LONG_SUB_UNDERFLOW(void);
+void lkdtm_ATOMIC_LONG_SUB_RETURN_UNDERFLOW(void);
+void lkdtm_ATOMIC_LONG_OVERFLOW(void);
+void lkdtm_ATOMIC_LONG_INC_RETURN_OVERFLOW(void);
+void lkdtm_ATOMIC_LONG_ADD_OVERFLOW(void);
+void lkdtm_ATOMIC_LONG_ADD_RETURN_OVERFLOW(void);
 
 /* lkdtm_heap.c */
 void lkdtm_OVERWRITE_ALLOCATION(void);

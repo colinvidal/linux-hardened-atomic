@@ -135,6 +135,43 @@ void lkdtm_ATOMIC_UNDERFLOW(void)
 	atomic_dec(&under);
 }
 
+void lkdtm_ATOMIC_DEC_RETURN_UNDERFLOW(void)
+{
+	atomic_t under = ATOMIC_INIT(INT_MIN);
+
+	pr_info("attempting good atomic_dec_return\n");
+	atomic_inc(&under);
+	atomic_dec_return(&under);
+
+	pr_info("attempting bad atomic_dec_return\n");
+	atomic_dec_return(&under);
+}
+
+void lkdtm_ATOMIC_SUB_UNDERFLOW(void) {
+	atomic_t under = ATOMIC_INIT(INT_MIN);
+
+	pr_info("attempting good atomic subtract\n");
+	atomic_add(10, &under);
+	atomic_sub(10, &under);
+
+	pr_info("attempting bad atomic subtract underflow\n");
+	atomic_sub(10, &under);
+
+}
+
+void lkdtm_ATOMIC_SUB_RETURN_UNDERFLOW(void)
+{
+	atomic_t under = ATOMIC_INIT(INT_MIN);
+
+	pr_info("attempting good atomic_sub_return\n");
+	atomic_add(10, &under);
+	atomic_sub_return(10, &under);
+
+	pr_info("attempting bad atomic_sub_return underflow\n");
+	atomic_sub_return(10, &under);
+
+}
+
 void lkdtm_ATOMIC_OVERFLOW(void)
 {
 	atomic_t over = ATOMIC_INIT(INT_MAX);
@@ -145,4 +182,161 @@ void lkdtm_ATOMIC_OVERFLOW(void)
 
 	pr_info("attempting bad atomic overflow\n");
 	atomic_inc(&over);
+}
+
+void lkdtm_ATOMIC_INC_RETURN_OVERFLOW(void)
+{
+	atomic_t over = ATOMIC_INIT(INT_MAX);
+
+	pr_info("attempting good atomic_inc_return\n");
+	atomic_dec(&over);
+	atomic_inc_return(&over);
+
+	pr_info("attempting bad atomic_inc_return overflow\n");
+	atomic_inc_return(&over);
+}
+
+void lkdtm_ATOMIC_ADD_OVERFLOW(void) {
+	atomic_t over = ATOMIC_INIT(INT_MAX);
+
+	pr_info("attempting good atomic add\n");
+	atomic_sub(10, &over);
+	atomic_add(10, &over);
+
+	pr_info("attempting bad atomic add overflow\n");
+	atomic_add(10, &over);
+}
+
+void lkdtm_ATOMIC_ADD_RETURN_OVERFLOW(void)
+{
+	atomic_t over = ATOMIC_INIT(INT_MAX);
+
+	pr_info("attempting good atomic_add_return\n");
+	atomic_sub(10, &over);
+	atomic_add_return(10, &over);
+
+	pr_info("attempting bad atomic_add_return overflow\n");
+	atomic_add_return(10, &over);
+}
+
+void lkdtm_ATOMIC_ADD_UNLESS_OVERFLOW(void)
+{
+	atomic_t over = ATOMIC_INIT(INT_MAX);
+
+	pr_info("attempting good atomic_add_unless\n");
+	atomic_sub(10, &over);
+	atomic_add_unless(&over, 10, 0);
+
+	pr_info("attempting bad atomic_add_unless overflow\n");
+	atomic_add_unless(&over, 10, 0);
+}
+
+void lkdtm_ATOMIC_INC_AND_TEST_OVERFLOW(void)
+{
+	atomic_t over = ATOMIC_INIT(INT_MAX);
+
+	pr_info("attempting good atomic_inc_and_test\n");
+	atomic_dec(&over);
+	atomic_inc_and_test(&over);
+
+	pr_info("attempting bad atomic_inc_and_test overflow\n");
+	atomic_inc_and_test(&over);
+}
+
+void lkdtm_ATOMIC_LONG_UNDERFLOW(void)
+{
+	atomic_long_t under = ATOMIC_LONG_INIT(LONG_MIN);
+
+	pr_info("attempting good atomic_long_dec\n");
+	atomic_long_inc(&under);
+	atomic_long_dec(&under);
+
+	pr_info("attempting bad atomic_long_dec underflow\n");
+	atomic_long_dec(&under);
+}
+
+void lkdtm_ATOMIC_LONG_DEC_RETURN_UNDERFLOW(void)
+{
+	atomic_long_t under = ATOMIC_LONG_INIT(LONG_MIN);
+
+	pr_info("attempting good atomic_long_dec_return\n");
+	atomic_long_inc(&under);
+	atomic_long_dec_return(&under);
+
+	pr_info("attempting bad atomic_long_dec_return underflow\n");
+	atomic_long_dec_return(&under);
+}
+
+void lkdtm_ATOMIC_LONG_SUB_UNDERFLOW(void)
+{
+	atomic_long_t under = ATOMIC_INIT(LONG_MIN);
+
+	pr_info("attempting good atomic_long_sub\n");
+	atomic_long_add(10, &under);
+	atomic_long_sub(10, &under);
+
+	pr_info("attempting bad atomic_long_sub underflow\n");
+	atomic_long_sub(10, &under);
+
+}
+
+void lkdtm_ATOMIC_LONG_SUB_RETURN_UNDERFLOW(void)
+{
+	atomic_long_t under = ATOMIC_INIT(LONG_MIN);
+
+	pr_info("attempting good atomic_long_sub_return \n");
+	atomic_long_add(10, &under);
+	atomic_long_sub_return(10, &under);
+
+	pr_info("attempting bad atomic_long_sub_return underflow\n");
+	atomic_long_sub_return(10, &under);
+
+}
+
+void lkdtm_ATOMIC_LONG_OVERFLOW(void)
+{
+	atomic_long_t over = ATOMIC_LONG_INIT(LONG_MAX);
+
+	pr_info("attempting good atomic_long_inc\n");
+	atomic_long_dec(&over);
+	atomic_long_inc(&over);
+
+	pr_info("attempting bad atomic_long_inc overflow\n");
+	atomic_long_inc(&over);
+}
+
+void lkdtm_ATOMIC_LONG_INC_RETURN_OVERFLOW(void)
+{
+	atomic_long_t over = ATOMIC_LONG_INIT(LONG_MAX);
+
+	pr_info("attempting good atomic_ong_inc_return\n");
+	atomic_long_dec(&over);
+	atomic_long_inc_return(&over);
+
+	pr_info("attempting bad atomic_long_inc_return overflow\n");
+	atomic_long_inc_return(&over);
+}
+
+void lkdtm_ATOMIC_LONG_ADD_OVERFLOW(void)
+{
+	atomic_long_t over = ATOMIC_LONG_INIT(LONG_MAX);
+
+	pr_info("attempting good atomic_long_add\n");
+	atomic_long_sub(10, &over);
+	atomic_long_add(10, &over);
+
+	pr_info("attempting bad atomic_long_add overflow\n");
+	atomic_long_add(10, &over);
+}
+
+void lkdtm_ATOMIC_LONG_ADD_RETURN_OVERFLOW(void)
+{
+	atomic_long_t over = ATOMIC_LONG_INIT(LONG_MAX);
+
+	pr_info("attempting good atomic_long_add_return\n");
+	atomic_long_sub(10, &over);
+	atomic_long_add_return(10, &over);
+
+	pr_info("attempting bad atomic_long_add_return overflow\n");
+	atomic_long_add_return(10, &over);
 }
