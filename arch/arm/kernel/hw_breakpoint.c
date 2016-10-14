@@ -30,12 +30,14 @@
 #include <linux/smp.h>
 #include <linux/cpu_pm.h>
 #include <linux/coresight.h>
+#include <linux/uaccess.h>
 
 #include <asm/cacheflush.h>
 #include <asm/cputype.h>
 #include <asm/current.h>
 #include <asm/hw_breakpoint.h>
 #include <asm/traps.h>
+#include <asm/atomic.h>
 
 /* Breakpoint currently in use for each BRP. */
 static DEFINE_PER_CPU(struct perf_event *, bp_on_reg[ARM_MAX_BRP]);
@@ -847,6 +849,22 @@ unlock:
 	watchpoint_single_step_handler(addr);
 }
 
+#ifdef CONFIG_HARDENED_ATOMIC
+void inline static hardened_atomic_bkpt_handler(struct pt_regs *regs)
+{
+	const void *pc = (void *)instruction_pointer(regs);
+	__le32 bkpt_encoded;
+
+	if (!probe_kernel_address(pc, bkpt_encoded) &&
+	    le32_to_cpu(bkpt_encoded) == HARDENED_ATOMIC_BKPT_IMM_ENCODED)
+		hardened_atomic_overflow(regs);
+}
+#else
+void inline static hardened_atomic_bkpt_handler(struct pt_regs *regs)
+{
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
+
 /*
  * Called from either the Data Abort Handler [watchpoint] or the
  * Prefetch Abort Handler [breakpoint] with interrupts disabled.
@@ -856,6 +874,8 @@ static int hw_breakpoint_pending(unsigned long addr, unsigned int fsr,
 {
 	int ret = 0;
 	u32 dscr;
+
+	hardened_atomic_bkpt_handler(regs);
 
 	preempt_disable();
 
