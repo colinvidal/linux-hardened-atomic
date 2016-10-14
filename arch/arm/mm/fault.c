@@ -580,6 +580,21 @@ do_PrefetchAbort(unsigned long addr, unsigned int ifsr, struct pt_regs *regs)
 	const struct fsr_info *inf = ifsr_info + fsr_fs(ifsr);
 	struct siginfo info;
 
+#ifdef CONFIG_HARDENED_ATOMIC
+	if (fsr_fs(ifsr) == FAULT_CODE_DEBUG) {
+		unsigned long pc = instruction_pointer(regs);
+		unsigned int bkpt;
+
+		if (!probe_kernel_address((const unsigned int *)pc, bkpt) &&
+		    cpu_to_le32(bkpt) == 0xe12f1073) {
+			current->thread.error_code = ifsr;
+			current->thread.trap_no = 0;
+			hardened_atomic_overflow(regs);
+			fixup_exception(regs);
+			return;
+		}
+	}
+#endif
 	if (!inf->fn(addr, ifsr | FSR_LNX_PF, regs))
 		return;
 
