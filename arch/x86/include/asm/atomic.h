@@ -98,6 +98,27 @@ static __always_inline void atomic_add_wrap(int i, atomic_wrap_t *v)
 }
 
 /**
+ * atomic_add_and_test - add value from variable and test result
+ * @i: integer value to add
+ * @v: pointer of type atomic_t
+ *
+ * Atomically adds @i from @v and returns
+ * true if the result is zero, or false for all
+ * other cases.
+ */
+static __always_inline bool atomic_add_and_test(int i, atomic_t *v)
+{
+	GEN_BINARY_RMWcc(LOCK_PREFIX "addl", LOCK_PREFIX "subl", v->counter, "er", i, "%0", e);
+}
+
+#ifdef CONFIG_HARDENED_ATOMIC
+static __always_inline bool atomic_add_and_test_wrap(int i, atomic_wrap_t *v)
+{
+	GEN_BINARY_RMWcc_wrap(LOCK_PREFIX "addl", v->counter, "er", i, "%0", e);
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
+
+/**
  * atomic_sub - subtract integer from atomic variable
  * @i: integer value to subtract
  * @v: pointer of type atomic_t
@@ -238,6 +259,13 @@ static __always_inline bool atomic_dec_and_test(atomic_t *v)
 	GEN_UNARY_RMWcc(LOCK_PREFIX "decl", LOCK_PREFIX "incl", v->counter, "%0", e);
 }
 
+#ifdef CONFIG_HARDENED_ATOMIC
+static __always_inline bool atomic_dec_and_test_wrap(atomic_wrap_t *v)
+{
+	GEN_UNARY_RMWcc_wrap(LOCK_PREFIX "decl", v->counter, "%0", e);
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
+
 /**
  * atomic_inc_and_test - increment and test
  * @v: pointer of type atomic_t
@@ -278,6 +306,13 @@ static __always_inline bool atomic_add_negative(int i, atomic_t *v)
 	GEN_BINARY_RMWcc(LOCK_PREFIX "addl", LOCK_PREFIX "subl", v->counter, "er", i, "%0", s);
 }
 
+#ifdef CONFIG_HARDENED_ATOMIC
+static __always_inline bool atomic_add_negative_wrap(int i, atomic_wrap_t *v)
+{
+	GEN_BINARY_RMWcc_wrap(LOCK_PREFIX "addl", v->counter, "er", i, "%0", s);
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
+
 /**
  * atomic_add_return - add integer and return
  * @i: integer value to add
@@ -314,12 +349,26 @@ static __always_inline int atomic_sub_return(int i, atomic_t *v)
 	return atomic_add_return(-i, v);
 }
 
+#ifdef CONFIG_HARDENED_ATOMIC
+static __always_inline int atomic_sub_return_wrap(int i, atomic_wrap_t *v)
+{
+	return atomic_add_return_wrap(-i, v);
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
+
 #define atomic_inc_return(v)  (atomic_add_return(1, v))
 static __always_inline int atomic_inc_return_wrap(atomic_wrap_t *v)
 {
 	return atomic_add_return_wrap(1, v);
 }
+
 #define atomic_dec_return(v)  (atomic_sub_return(1, v))
+#ifdef CONFIG_HARDENED_ATOMIC
+static __always_inline int atomic_dec_return_wrap(atomic_wrap_t *v)
+{
+	return atomic_sub_return_wrap(1, v);
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
 
 static __always_inline int atomic_fetch_add(int i, atomic_t *v)
 {

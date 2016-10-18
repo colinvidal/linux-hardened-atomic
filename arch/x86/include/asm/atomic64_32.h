@@ -277,6 +277,16 @@ static inline long long atomic64_dec_return(atomic64_t *v)
 	return a;
 }
 
+#ifdef CONFIG_HARDENED_ATOMIC
+static inline long long atomic64_dec_return_wrap(atomic64_wrap_t *v)
+{
+	long long a;
+	alternative_atomic64(dec_return_wrap, "=&A" (a),
+			     "S" (v) : "memory", "ecx");
+	return a;
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
+
 /**
  * atomic64_add - add integer to atomic64 variable
  * @i: integer value to add
@@ -308,6 +318,27 @@ static inline long long atomic64_add_wrap(long long i, atomic64_wrap_t *v)
 }
 
 /**
+ * atomic64_add_and_test - add value from variable and test result
+ * @i: integer value to add
+ * @v: pointer to type atomic64_t
+ *
+ * Atomically subtracts @i from @v and returns
+ * true if the result is zero, or false for all
+ * other cases.
+ */
+static inline int atomic64_add_and_test(long long i, atomic64_t *v)
+{
+	return atomic64_add_return(i, v) == 0;
+}
+
+#ifdef CONFIG_HARDENED_ATOMIC
+static inline int atomic64_add_and_test_wrap(long long i, atomic64_wrap_t *v)
+{
+	return atomic64_add_return_wrap(i, v) == 0;
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
+
+/**
  * atomic64_sub - subtract the atomic64 variable
  * @i: integer value to subtract
  * @v: pointer to type atomic64_t
@@ -337,15 +368,6 @@ static inline int atomic64_sub_and_test(long long i, atomic64_t *v)
 }
 
 #ifdef CONFIG_HARDENED_ATOMIC
-/**
- * atomic64_sub_and_test_wrap - subtract value from variable and test result
- * @i: integer value to subtract
- * @v: pointer to type atomic64_wrap_t
- *
- * Atomically subtracts @i from @v and returns
- * true if the result is zero, or false for all
- * other cases.
- */
 static inline int atomic64_sub_and_test_wrap(long long i, atomic64_wrap_t *v)
 {
 	return atomic64_sub_return_wrap(i, v) == 0;
@@ -401,6 +423,13 @@ static inline int atomic64_dec_and_test(atomic64_t *v)
 	return atomic64_dec_return(v) == 0;
 }
 
+#ifdef CONFIG_HARDENED_ATOMIC
+static inline int atomic64_dec_and_test_wrap(atomic64_wrap_t *v)
+{
+	return atomic64_dec_return_wrap(v) == 0;
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
+
 /**
  * atomic64_inc_and_test - increment and test
  * @v: pointer to type atomic64_t
@@ -413,6 +442,13 @@ static inline int atomic64_inc_and_test(atomic64_t *v)
 {
 	return atomic64_inc_return(v) == 0;
 }
+
+#ifdef CONFIG_HARDENED_ATOMIC
+static inline int atomic64_inc_and_test_wrap(atomic64_wrap_t *v)
+{
+	return atomic64_inc_return_wrap(v) == 0;
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
 
 /**
  * atomic64_add_negative - add and test if negative
@@ -427,6 +463,13 @@ static inline int atomic64_add_negative(long long i, atomic64_t *v)
 {
 	return atomic64_add_return(i, v) < 0;
 }
+
+#ifdef CONFIG_HARDENED_ATOMIC
+static inline int atomic64_add_negative_wrap(long long i, atomic64_wrap_t *v)
+{
+	return atomic64_add_return_wrap(i, v) < 0;
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
 
 /**
  * atomic64_add_unless - add unless the number is a given value
@@ -446,7 +489,6 @@ static inline int atomic64_add_unless(atomic64_t *v, long long a, long long u)
 			     "S" (v) : "memory");
 	return (int)a;
 }
-
 
 static inline int atomic64_inc_not_zero(atomic64_t *v)
 {
