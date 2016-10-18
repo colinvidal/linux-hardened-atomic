@@ -16,8 +16,6 @@ typedef struct {
 	long long counter;
 } atomic64_t;
 
-typedef atomic64_t atomic64_wrap_t;
-
 #define ATOMIC64_INIT(i)	{ (i) }
 
 extern long long atomic64_read(const atomic64_t *v);
@@ -58,6 +56,7 @@ extern int	 atomic64_add_unless(atomic64_t *v, long long a, long long u);
 #define atomic64_inc(v)			atomic64_add(1LL, (v))
 #define atomic64_inc_return(v)		atomic64_add_return(1LL, (v))
 #define atomic64_inc_and_test(v) 	(atomic64_inc_return(v) == 0)
+#define atomic64_add_and_test(a, v)	(atomic64_add_return((a), (v)) == 0)
 #define atomic64_sub_and_test(a, v)	(atomic64_sub_return((a), (v)) == 0)
 #define atomic64_dec(v)			atomic64_sub(1LL, (v))
 #define atomic64_dec_return(v)		atomic64_sub_return(1LL, (v))
@@ -72,6 +71,7 @@ extern int	 atomic64_add_unless(atomic64_t *v, long long a, long long u);
 #define atomic64_inc_wrap(v) atomic64_inc(v)
 #define atomic64_inc_return_wrap(v) atomic64_inc_return(v)
 #define atomic64_dec_wrap(v) atomic64_dec(v)
+#define atomic64_dec_return_wrap(v) atomic64_return_dec(v)
 #define atomic64_cmpxchg_wrap(v, o, n) atomic64_cmpxchg((v), (o), (n))
 #define atomic64_xchg_wrap(v, n) atomic64_xchg((v), (n))
 
