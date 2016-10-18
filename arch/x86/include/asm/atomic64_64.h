@@ -94,6 +94,27 @@ static __always_inline void atomic64_add_wrap(long i, atomic64_wrap_t *v)
 }
 
 /**
+ * atomic64_add_and_test - add value from variable and test result
+ * @i: integer value to add
+ * @v: pointer to type atomic64_t
+ *
+ * Atomically adds @i from @v and returns
+ * true if the result is zero, or false for all
+ * other cases.
+ */
+static inline bool atomic64_add_and_test(long i, atomic64_t *v)
+{
+	GEN_BINARY_RMWcc(LOCK_PREFIX "addq", LOCK_PREFIX "subq", v->counter, "er", i, "%0", e);
+}
+
+#ifdef CONFIG_HARDENED_ATOMIC
+static inline bool atomic64_add_and_test_wrap(long i, atomic64_wrap_t *v)
+{
+	GEN_BINARY_RMWcc_wrap(LOCK_PREFIX "addq", v->counter, "er", i, "%0", e);
+}
+#endif /* CONFIG_HARDENED_ATMOMIC */
+
+/**
  * atomic64_sub - subtract the atomic64 variable
  * @i: integer value to subtract
  * @v: pointer to type atomic64_t
@@ -234,6 +255,13 @@ static inline bool atomic64_dec_and_test(atomic64_t *v)
 	GEN_UNARY_RMWcc(LOCK_PREFIX "decq", LOCK_PREFIX "incq", v->counter, "%0", e);
 }
 
+#ifdef CONFIG_HARDENED_ATOMIC
+static inline bool atomic64_dec_and_test_wrap(atomic64_wrap_t *v)
+{
+	GEN_UNARY_RMWcc_wrap(LOCK_PREFIX "decq", v->counter, "%0", e);
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
+
 /**
  * atomic64_inc_and_test - increment and test
  * @v: pointer to type atomic64_t
@@ -246,6 +274,13 @@ static inline bool atomic64_inc_and_test(atomic64_t *v)
 {
 	GEN_UNARY_RMWcc(LOCK_PREFIX "incq", LOCK_PREFIX "decq", v->counter, "%0", e);
 }
+
+#ifdef CONFIG_HARDENED_ATOMIC
+static inline bool atomic64_inc_and_test_wrap(atomic64_wrap_t *v)
+{
+	GEN_UNARY_RMWcc_wrap(LOCK_PREFIX "incq", v->counter, "%0", e);
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
 
 /**
  * atomic64_add_negative - add and test if negative
@@ -261,6 +296,13 @@ static inline bool atomic64_add_negative(long i, atomic64_t *v)
 	GEN_BINARY_RMWcc(LOCK_PREFIX "addq", LOCK_PREFIX "subq", v->counter, "er", i, "%0", s);
 }
 
+#ifdef CONFIG_HARDENED_ATOMIC
+static inline bool atomic64_add_negative_wrap(long i, atomic64_wrap_t *v)
+{
+	GEN_BINARY_RMWcc_wrap(LOCK_PREFIX "addq", v->counter, "er", i, "%0", s);
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
+
 /**
  * atomic64_add_return - add and return
  * @i: integer value to add
@@ -273,13 +315,6 @@ static __always_inline long atomic64_add_return(long i, atomic64_t *v)
 	return i + xadd_check_overflow(&v->counter, i);
 }
 
-/**
- * atomic64_add_return_wrap - add and return
- * @i: integer value to add
- * @v: pointer to type atomic64_wrap_t
- *
- * Atomically adds @i to @v and returns @i + @v
- */
 static __always_inline long atomic64_add_return_wrap(long i, atomic64_wrap_t *v)
 {
 	return i + xadd(&v->counter, i);
@@ -289,6 +324,13 @@ static inline long atomic64_sub_return(long i, atomic64_t *v)
 {
 	return atomic64_add_return(-i, v);
 }
+
+#ifdef CONFIG_HARDENED_ATOMIC
+static inline long atomic64_sub_return_wrap(long i, atomic64_wrap_t *v)
+{
+	return atomic64_add_return_wrap(-i, v);
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
 
 static inline long atomic64_fetch_add(long i, atomic64_t *v)
 {
@@ -301,11 +343,10 @@ static inline long atomic64_fetch_sub(long i, atomic64_t *v)
 }
 
 #define atomic64_inc_return(v)  (atomic64_add_return(1, (v)))
-static inline long atomic64_inc_return_wrap(atomic64_wrap_t *v)
-{
-	return atomic64_add_return_wrap(1, v);
-}
 #define atomic64_dec_return(v)  (atomic64_sub_return(1, (v)))
+
+#define atomic64_inc_return_wrap(v)  (atomic64_add_return_wrap(1, (v)))
+#define atomic64_dec_return_wrap(v)  (atomic64_sub_return_wrap(1, (v)))
 
 static inline long atomic64_cmpxchg(atomic64_t *v, long old, long new)
 {
@@ -360,6 +401,27 @@ static inline bool atomic64_add_unless(atomic64_t *v, long a, long u)
 	}
 	return c != (u);
 }
+
+#ifdef CONFIG_HARDENED_ATOMIC
+static inline bool atomic64_add_unless_wrap(atomic64_wrap_t *v, long a, long u)
+{
+	long c, old, new;
+	c = atomic64_read_wrap(v);
+	for (;;) {
+		if (unlikely(c == (u)))
+			break;
+		asm volatile("add %2,%0\n"
+			     : "=r" (new)
+			     : "0" (c), "ir" (a));
+
+		old = atomic64_cmpxchg_wrap((v), c, c + (a));
+		if (likely(old == c))
+			break;
+		c = old;
+	}
+	return c != (u);
+}
+#endif /* CONFIG_HARDENED_ATOMIC */
 
 #define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
 
