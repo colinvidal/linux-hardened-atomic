@@ -545,10 +545,12 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
  * Atomically adds @a to @v, so long as @v was not already @u.
  * Returns non-zero if @v was not @u, and zero otherwise.
  */
+#ifdef CONFIG_HARDENED_ATOMIC
 static inline int atomic_add_unless_wrap(atomic_wrap_t *v, int a, int u)
 {
 	return __atomic_add_unless_wrap(v, a, u) != u;
 }
+#endif /* CONFIG_HARDENED_ATOMIC */
 
 /**
  * atomic_inc_not_zero - increment unless the number is zero
@@ -676,12 +678,14 @@ static inline int atomic_dec_if_positive(atomic_t *v)
 #endif
 
 #ifndef CONFIG_HARDENED_ATOMIC
-#define atomic64_read_wrap(v) atomic64_read(v)
-#define atomic64_set_wrap(v, i) atomic64_set((v), (i))
-#define atomic64_add_wrap(a, v) atomic64_add((a), (v))
-#define atomic64_sub_wrap(a, v) atomic64_sub((a), (v))
-#define atomic64_inc_wrap(v) atomic64_inc(v)
-#define atomic64_dec_wrap(v) atomic64_dec(v)
+#define atomic64_wrap_t atomic64_t
+#define atomic64_read_wrap(v)		atomic64_read(v)
+#define atomic64_set_wrap(v, i)		atomic64_set((v), (i))
+#define atomic64_add_wrap(a, v)		atomic64_add((a), (v))
+#define atomic64_sub_wrap(a, v)		atomic64_sub((a), (v))
+#define atomic64_inc_wrap(v)		atomic64_inc((v))
+#define atomic64_inc_return_wrap(v)	atomic64_inc_return((v))
+#define atomic64_dec_wrap(v)		atomic64_dec((v))
 #endif /* CONFIG_HARDENED_ATOMIC */
 
 #ifndef atomic64_read_acquire
