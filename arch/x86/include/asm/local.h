@@ -10,10 +10,6 @@ typedef struct {
 	atomic_long_t a;
 } local_t;
 
-typedef struct {
-	atomic_long_wrap_t a;
-} local_wrap_t;
-
 #define LOCAL_INIT(i)	{ ATOMIC_LONG_INIT(i) }
 
 #define local_read(l)	atomic_long_read(&(l)->a)

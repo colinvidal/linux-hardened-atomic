@@ -679,17 +679,39 @@ static inline int atomic_dec_if_positive(atomic_t *v)
 
 #ifndef CONFIG_HARDENED_ATOMIC
 #define atomic64_wrap_t atomic64_t
+#ifndef atomic64_read_wrap
 #define atomic64_read_wrap(v)		atomic64_read(v)
+#endif
+#ifndef atomic64_set_wrap
 #define atomic64_set_wrap(v, i)		atomic64_set((v), (i))
+#endif
+#ifndef atomic64_add_wrap
 #define atomic64_add_wrap(a, v)		atomic64_add((a), (v))
+#endif
+#ifndef atomic64_add_return_wrap
 #define atomic64_add_return_wrap(a, v)	atomic64_add_return((a), (v))
+#endif
+#ifndef atomic64_sub_wrap
 #define atomic64_sub_wrap(a, v)		atomic64_sub((a), (v))
+#endif
+#ifndef atomic64_inc_wrap
 #define atomic64_inc_wrap(v)		atomic64_inc((v))
+#endif
+#ifndef atomic64_inc_return_wrap
 #define atomic64_inc_return_wrap(v)	atomic64_inc_return((v))
+#endif
+#ifndef atomic64_dec_wrap
 #define atomic64_dec_wrap(v)		atomic64_dec((v))
+#endif
+#ifndef atomic64_dec_return_wrap
 #define atomic64_dec_return_wrap(v)	atomic64_dec_return((v))
+#endif
+#ifndef atomic64_cmpxchg_wrap
 #define atomic64_cmpxchg_wrap(v, o, n) atomic64_cmpxchg((v), (o), (n))
+#endif
+#ifndef atomic64_xchg_wrap
 #define atomic64_xchg_wrap(v, n) atomic64_xchg((v), (n))
+#endif
 #endif /* CONFIG_HARDENED_ATOMIC */
 
 #ifndef atomic64_read_acquire
