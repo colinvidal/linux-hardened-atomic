@@ -279,7 +279,7 @@ static inline int __atomic_add_unless(atomic_t *v, int a, int u)
 	return c;
 }
 
-static inline int __atomic_add_unless_wrap(atomic_t *v, int a, int u)
+static inline int __atomic_add_unless_wrap(atomic_wrap_t *v, int a, int u)
 {
 	int c, old;
 	c = atomic_read_wrap(v);

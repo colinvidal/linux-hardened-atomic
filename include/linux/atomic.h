@@ -682,10 +682,14 @@ static inline int atomic_dec_if_positive(atomic_t *v)
 #define atomic64_read_wrap(v)		atomic64_read(v)
 #define atomic64_set_wrap(v, i)		atomic64_set((v), (i))
 #define atomic64_add_wrap(a, v)		atomic64_add((a), (v))
+#define atomic64_add_return_wrap(a, v)	atomic64_add_return((a), (v))
 #define atomic64_sub_wrap(a, v)		atomic64_sub((a), (v))
 #define atomic64_inc_wrap(v)		atomic64_inc((v))
 #define atomic64_inc_return_wrap(v)	atomic64_inc_return((v))
 #define atomic64_dec_wrap(v)		atomic64_dec((v))
+#define atomic64_dec_return_wrap(v)	atomic64_dec_return((v))
+#define atomic64_cmpxchg_wrap(v, o, n) atomic64_cmpxchg((v), (o), (n))
+#define atomic64_xchg_wrap(v, n) atomic64_xchg((v), (n))
 #endif /* CONFIG_HARDENED_ATOMIC */
 
 #ifndef atomic64_read_acquire
