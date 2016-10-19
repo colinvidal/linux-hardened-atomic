@@ -90,7 +90,7 @@
 	__atomic_op_fence(atomic_add_return, __VA_ARGS__)
 #endif
 
-#ifndef atomic_add_return_wrap_relaxed
+#ifndef atomic_add_return_wrap
 #define atomic_add_return_wrap(...)					\
 	__atomic_op_fence(atomic_add_return_wrap, __VA_ARGS__)
 #endif
