@@ -168,7 +168,6 @@ config HAVE_ARCH_HARDENED_ATOMIC
 config HARDENED_ATOMIC
 	bool "Prevent reference counter overflow in atomic_t"
 	depends on HAVE_ARCH_HARDENED_ATOMIC
-	depends on !CONFIG_GENERIC_ATOMIC64
 	select BUG
 	help
 	  This option catches counter wrapping in atomic_t, which

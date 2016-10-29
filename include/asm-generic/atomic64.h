@@ -16,66 +16,75 @@ typedef struct {
 	long long counter;
 } atomic64_t;
 
+typedef struct {
+	long long counter;
+} atomic64_wrap_t;
+
 #define ATOMIC64_INIT(i)	{ (i) }
 
 extern long long atomic64_read(const atomic64_t *v);
+extern long long atomic64_read_wrap(const atomic64_wrap_t *v);
 extern void	 atomic64_set(atomic64_t *v, long long i);
+extern void	 atomic64_set_wrap(atomic64_wrap_t *v, long long i);
 
-#define ATOMIC64_OP(op)							\
-extern void	 atomic64_##op(long long a, atomic64_t *v);
+#define ATOMIC64_OP(op, suffix)						      \
+extern void	 atomic64_##op##suffix(long long a, atomic64##suffix##_t *v);
 
-#define ATOMIC64_OP_RETURN(op)						\
-extern long long atomic64_##op##_return(long long a, atomic64_t *v);
+#define ATOMIC64_OP_RETURN(op, suffix)					      \
+extern long long atomic64_##op##_return##suffix(long long a,	              \
+						atomic64##suffix##_t *v);     \
 
-#define ATOMIC64_FETCH_OP(op)						\
-extern long long atomic64_fetch_##op(long long a, atomic64_t *v);
+#define ATOMIC64_FETCH_OP(op, suffix)					      \
+extern long long atomic64_fetch_##op##suffix(long long a,                     \
+					     atomic64##suffix##_t *v);
 
-#define ATOMIC64_OPS(op)	ATOMIC64_OP(op) ATOMIC64_OP_RETURN(op) ATOMIC64_FETCH_OP(op)
+#define __ATOMIC64_OPS(op, suffix)					      \
+	ATOMIC64_OP(op, suffix)						      \
+	ATOMIC64_OP_RETURN(op, suffix)					      \
+	ATOMIC64_FETCH_OP(op, suffix)
+
+#define ATOMIC64_OPS(op)			                              \
+	__ATOMIC64_OPS(op, _wrap)					      \
+	__ATOMIC64_OPS(op, )
 
 ATOMIC64_OPS(add)
 ATOMIC64_OPS(sub)
-
-#undef ATOMIC64_OPS
-#define ATOMIC64_OPS(op)	ATOMIC64_OP(op) ATOMIC64_FETCH_OP(op)
-
 ATOMIC64_OPS(and)
 ATOMIC64_OPS(or)
 ATOMIC64_OPS(xor)
 
 #undef ATOMIC64_OPS
+#undef __ATOMIC64_OPS
 #undef ATOMIC64_FETCH_OP
 #undef ATOMIC64_OP_RETURN
 #undef ATOMIC64_OP
 
 extern long long atomic64_dec_if_positive(atomic64_t *v);
+extern long long atomic64_dec_if_positive_wrap(atomic64_wrap_t *v);
 extern long long atomic64_cmpxchg(atomic64_t *v, long long o, long long n);
+extern long long atomic64_cmpxchg_wrap(atomic64_wrap_t *v, long long o,
+				       long long n);
 extern long long atomic64_xchg(atomic64_t *v, long long new);
+extern long long atomic64_xchg_wrap(atomic64_wrap_t *v, long long new);
 extern int	 atomic64_add_unless(atomic64_t *v, long long a, long long u);
+extern int	 atomic64_add_unless_wrap(atomic64_wrap_t *v, long long a,
+					  long long u);
 
 #define atomic64_add_negative(a, v)	(atomic64_add_return((a), (v)) < 0)
 #define atomic64_inc(v)			atomic64_add(1LL, (v))
+#define atomic64_inc_wrap(v)            atomic64_add_wrap(1LL, v)
 #define atomic64_inc_return(v)		atomic64_add_return(1LL, (v))
+#define atomic64_inc_return_wrap(v)     atomic64_add_return_wrap(1LL, v)
 #define atomic64_inc_and_test(v) 	(atomic64_inc_return(v) == 0)
+#define atomic64_inc_and_test_wrap(v)   )atomic64_inc_return_wrap(v) == 0)
 #define atomic64_sub_and_test(a, v)	(atomic64_sub_return((a), (v)) == 0)
+#define atomic64_sub_and_test_wrap(a, v) (atomic64_sub_return_wrap(a, v) == 0)
 #define atomic64_dec(v)			atomic64_sub(1LL, (v))
+#define atomic64_dec_wrap(v)            atomic64_sub_wrap(1LL, v)
 #define atomic64_dec_return(v)		atomic64_sub_return(1LL, (v))
+#define atomic64_dec_return_wrap(v)     atomic64_sub_return_wrap(1LL, v)
 #define atomic64_dec_and_test(v)	(atomic64_dec_return((v)) == 0)
+#define atomic64_dec_and_test_wrap(v)   (atomic64_dec_return_wrap(v) == 0)
 #define atomic64_inc_not_zero(v) 	atomic64_add_unless((v), 1LL, 0LL)
-
-#define atomic64_read_wrap(v) atomic64_read(v)
-#define atomic64_set_wrap(v, i) atomic64_set((v), (i))
-#define atomic64_add_wrap(a, v) atomic64_add((a), (v))
-#define atomic64_add_return_wrap(a, v) atomic64_add_return((a), (v))
-#define atomic64_sub_wrap(a, v) atomic64_sub((a), (v))
-#define atomic64_sub_return_wrap(a, v) atomic64_sub_return((a), (v))
-#define atomic64_sub_and_test_wrap(a, v) atomic64_sub_and_test((a), (v))
-#define atomic64_inc_wrap(v) atomic64_inc(v)
-#define atomic64_inc_return_wrap(v) atomic64_inc_return(v)
-#define atomic64_inc_and_test_wrap(v) atomic64_inc_and_test(v)
-#define atomic64_dec_wrap(v) atomic64_dec(v)
-#define atomic64_dec_return_wrap(v) atomic64_return_dec(v)
-#define atomic64_dec_and_test_wrap(v) atomic64_and_test_dec(v)
-#define atomic64_cmpxchg_wrap(v, o, n) atomic64_cmpxchg((v), (o), (n))
-#define atomic64_xchg_wrap(v, n) atomic64_xchg((v), (n))
 
 #endif  /*  _ASM_GENERIC_ATOMIC64_H  */

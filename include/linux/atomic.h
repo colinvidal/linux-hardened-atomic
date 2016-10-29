@@ -688,8 +688,7 @@ static inline int atomic_dec_if_positive(atomic_t *v)
 
 #ifdef CONFIG_GENERIC_ATOMIC64
 #include <asm-generic/atomic64.h>
-#endif
-
+#else
 #ifndef CONFIG_HARDENED_ATOMIC
 #define atomic64_wrap_t atomic64_t
 #ifndef atomic64_read_wrap
@@ -1161,6 +1160,7 @@ static inline long long atomic64_fetch_andnot_release(long long i, atomic64_t *v
 	return atomic64_fetch_and_release(~i, v);
 }
 #endif
+#endif /* CONFIG_ATOMIC64_GENERIC */
 
 #include <asm-generic/atomic-long.h>
 
