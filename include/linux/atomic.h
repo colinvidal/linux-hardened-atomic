@@ -425,11 +425,14 @@
 	__atomic_op_fence(atomic_xchg, __VA_ARGS__)
 #endif
 
-#ifndef atomic_xchg_wrap
+#endif /* atomic_xchg_relaxed */
+
+#ifndef atomic_xchg_wrap_relaxed
+#define atomic_xchg_wrap_relaxed atomic_xchg_wrap
+#else
 #define  atomic_xchg_wrap(...)				\
 	__atomic_op_fence(atomic_xchg_wrap, __VA_ARGS__)
-#endif
-#endif /* atomic_xchg_relaxed */
+#endif /* atomic_xchg_wrap_relaxed */
 
 /* atomic_cmpxchg_relaxed */
 #ifndef atomic_cmpxchg_relaxed
@@ -454,11 +457,14 @@
 	__atomic_op_fence(atomic_cmpxchg, __VA_ARGS__)
 #endif
 
-#ifndef atomic_cmpxchg_wrap
+#endif /* atomic_cmpxchg_relaxed */
+
+#ifndef atomic_cmpxchg_wrap_relaxed
+#define atomic_cmpxchg_wrap_relaxed atomic_cmpxchg_wrap
+#else
 #define  atomic_cmpxchg_wrap(...)				\
 	__atomic_op_fence(atomic_cmpxchg_wrap, __VA_ARGS__)
-#endif
-#endif /* atomic_cmpxchg_relaxed */
+#endif /* atomic_cmpxchg_relaxed_wrap */
 
 /* cmpxchg_relaxed */
 #ifndef cmpxchg_relaxed
